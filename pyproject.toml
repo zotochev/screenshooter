@@ -1,0 +1,20 @@
+[project]
+name = "screenshooter"
+version = "0.1.0"
+description = "Fixed-size overlay window for taking screenshots"
+requires-python = ">=3.11"
+dependencies = [
+    "PyQt6",
+]
+
+[project.scripts]
+screenshooter = "screenshooter.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.19.0",
+]
