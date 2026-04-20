@@ -8,15 +8,18 @@ from screenshooter.capture.capturer import capture
 from screenshooter.hotkey.hotkey_manager import HotkeyManager
 from screenshooter.overlay.border_flash import BorderFlash
 from screenshooter.hotkey.vk_codes import QT_KEY_TO_VK, key_display_name
+from screenshooter.overlay.active_window_strategy import ActiveWindowStrategy
 from screenshooter.overlay.drag_resize_strategy import DragResizeStrategy
 from screenshooter.overlay.follow_cursor_strategy import FollowCursorStrategy
 from screenshooter.overlay.fullscreen_strategy import FullscreenStrategy
 from screenshooter.overlay.position_strategy import PositionStrategy
+from screenshooter.overlay.selection_strategy import SelectionStrategy
 from screenshooter.settings.config import Config
 from screenshooter.win_border import remove_dwm_border
 from screenshooter.ui.format_wheel import FormatWheel
 from screenshooter.ui.key_capture_dialog import KeyCaptureDialog
 from screenshooter.ui.main_wheel import MainWheel
+from screenshooter.ui.mode_wheel import ModeWheel
 from screenshooter.ui.settings_wheel import SettingsWheel
 
 
@@ -37,10 +40,15 @@ class FrameWindow(QWidget):
 
         follow = FollowCursorStrategy(self, hotkey_manager, is_paused=self._is_wheel_visible)
         follow.capture_requested.connect(self._capture)
+        self._active_window_strategy = ActiveWindowStrategy(self, is_paused=self._is_wheel_visible)
+        selection = SelectionStrategy(self)
+        selection.capture_requested.connect(self._capture)
         self._strategies: list[PositionStrategy] = [
             DragResizeStrategy(self, INITIAL_SIZE),
             follow,
             FullscreenStrategy(self),
+            self._active_window_strategy,
+            selection,
         ]
         self._strategy_index: int = 0
         self._strategy: PositionStrategy = self._strategies[0]
@@ -59,12 +67,16 @@ class FrameWindow(QWidget):
             current_key_label=lambda: self._config.capture_key_name,
             current_format_label=lambda: self._config.format.upper(),
         )
+        mode_wheel = ModeWheel(
+            labels=[s.label for s in self._strategies],
+            get_current_index=lambda: self._strategy_index,
+            on_select=self._select_strategy,
+        )
         self._wheel = MainWheel(
             settings_wheel=settings_wheel,
+            mode_wheel=mode_wheel,
             on_open_folder=self._open_output_dir,
             on_capture=self._capture,
-            next_strategy_label=self._next_strategy_label,
-            on_cycle_strategy=self._cycle_strategy,
             on_minimize=self.hide,
         )
         self._setup_window()
@@ -146,18 +158,21 @@ class FrameWindow(QWidget):
         # Fill interior with alpha=1 so Windows registers mouse hits on transparent area
         painter.fillRect(self.rect(), QColor(0, 0, 0, 1))
 
+        if self._strategy.paint(painter, self.rect()):
+            return
+
         border = BorderFlash.FLASH_COLOR if self._border_flash.is_active else self._strategy.border_color
         painter.setPen(QPen(border, BORDER_WIDTH))
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawRoundedRect(
             self.rect().adjusted(BORDER_WIDTH, BORDER_WIDTH, -BORDER_WIDTH, -BORDER_WIDTH),
-            # 4, 4,
             10, 10,
         )
 
     def showEvent(self, event) -> None:
         super().showEvent(event)
         remove_dwm_border(int(self.winId()))
+        self._active_window_strategy.register_hwnd(int(self.winId()))
         if handle := self.windowHandle():
             handle.screenChanged.connect(self._on_screen_changed)
 
@@ -184,17 +199,18 @@ class FrameWindow(QWidget):
     def _is_wheel_visible(self) -> bool:
         return self._wheel.isVisible()
 
-    def _next_strategy_label(self) -> str:
-        next_index = (self._strategy_index + 1) % len(self._strategies)
-        return self._strategies[next_index].label
-
-    def _cycle_strategy(self) -> None:
+    def _select_strategy(self, index: int) -> None:
+        if index == self._strategy_index:
+            return
         prev = self._strategy
         self._strategy.deactivate()
-        self._strategy_index = (self._strategy_index + 1) % len(self._strategies)
-        self._strategy = self._strategies[self._strategy_index]
-        if isinstance(prev, FullscreenStrategy) and isinstance(self._strategy, DragResizeStrategy):
-            self._strategy._target_size = INITIAL_SIZE
+        self._strategy_index = index
+        self._strategy = self._strategies[index]
+        if isinstance(prev, FullscreenStrategy) and not isinstance(self._strategy, FullscreenStrategy):
+            if isinstance(self._strategy, DragResizeStrategy):
+                self._strategy._target_size = INITIAL_SIZE
+            else:
+                self.resize(INITIAL_SIZE)
         self._strategy.activate()
         self.update()
 
@@ -237,7 +253,7 @@ class FrameWindow(QWidget):
         QTimer.singleShot(0, lambda: self.resize(drag.target_size))
 
     def _capture(self) -> None:
-        inner = self.geometry().adjusted(
+        inner = self._strategy.capture_rect or self.geometry().adjusted(
             BORDER_WIDTH, BORDER_WIDTH, -BORDER_WIDTH, -BORDER_WIDTH
         )
         self.hide()
@@ -248,4 +264,5 @@ class FrameWindow(QWidget):
         path = capture(rect, self._config)
         self.show()
         self.captured.emit()
+        self._strategy.on_capture_done()
         print(f"Saved: {path}")
