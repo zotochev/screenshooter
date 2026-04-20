@@ -22,11 +22,14 @@ def load() -> Config:
     try:
         data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
         key_code = data.get("capture_key_code", int(Qt.Key.Key_F9))
+        toggle_code = data.get("toggle_key_code", int(Qt.Key.Key_F10))
         return Config(
             output_dir=Path(data["output_dir"]),
             format=data.get("format", "png"),
             capture_key_code=key_code,
             capture_key_name=key_display_name(Qt.Key(key_code)),
+            toggle_key_code=toggle_code,
+            toggle_key_name=key_display_name(Qt.Key(toggle_code)),
         )
     except (KeyError, ValueError, OSError):
         return Config()
@@ -38,5 +41,6 @@ def save(config: Config) -> None:
         "output_dir": str(config.output_dir),
         "format": config.format,
         "capture_key_code": config.capture_key_code,
+        "toggle_key_code": config.toggle_key_code,
     }
     CONFIG_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")

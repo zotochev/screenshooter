@@ -37,6 +37,7 @@ class FrameWindow(QWidget):
         self._config = config
         self._capture_hotkey_id: int | None = None
         self._exit_hotkey_id: int | None = None
+        self._toggle_hotkey_id: int | None = None
 
         follow = FollowCursorStrategy(self, hotkey_manager, is_paused=self._is_wheel_visible)
         follow.capture_requested.connect(self._capture)
@@ -56,6 +57,9 @@ class FrameWindow(QWidget):
         self._key_dialog = KeyCaptureDialog()
         self._key_dialog.key_captured.connect(self._on_key_captured)
 
+        self._toggle_key_dialog = KeyCaptureDialog()
+        self._toggle_key_dialog.key_captured.connect(self._on_toggle_key_captured)
+
         self._border_flash = BorderFlash(self)
         self.captured.connect(self._border_flash.flash)
 
@@ -64,7 +68,9 @@ class FrameWindow(QWidget):
             format_wheel=format_wheel,
             on_pick_folder=self._pick_output_dir,
             on_capture_key=self._show_key_capture,
-            current_key_label=lambda: self._config.capture_key_name,
+            on_toggle_key=self._show_toggle_key_capture,
+            current_key_label=lambda: f"Снять: {self._config.capture_key_name}",
+            current_toggle_key_label=lambda: f"Скрыть: {self._config.toggle_key_name}",
             current_format_label=lambda: self._config.format.upper(),
         )
         mode_wheel = ModeWheel(
@@ -123,7 +129,7 @@ class FrameWindow(QWidget):
 
     def _quit(self) -> None:
         self._strategy.deactivate()
-        for hotkey_id in (self._capture_hotkey_id, self._exit_hotkey_id):
+        for hotkey_id in (self._capture_hotkey_id, self._exit_hotkey_id, self._toggle_hotkey_id):
             if hotkey_id is not None:
                 self._hotkey_manager.unregister(hotkey_id)
         self._tray.hide()
@@ -146,6 +152,11 @@ class FrameWindow(QWidget):
         self._exit_hotkey_id = self._hotkey_manager.register(
             QT_KEY_TO_VK[Qt.Key.Key_Escape], 0, self.close
         )
+        toggle_key = Qt.Key(self._config.toggle_key_code)
+        if toggle_key in QT_KEY_TO_VK:
+            self._toggle_hotkey_id = self._hotkey_manager.register(
+                QT_KEY_TO_VK[toggle_key], 0, self._toggle_visibility
+            )
 
     # ------------------------------------------------------------------
     # Qt events
@@ -231,6 +242,20 @@ class FrameWindow(QWidget):
         self._capture_hotkey_id = self._hotkey_manager.register(vk, 0, self._capture)
         self._config.capture_key_code = key_code
         self._config.capture_key_name = key_display_name(qt_key)
+
+    def _show_toggle_key_capture(self) -> None:
+        QTimer.singleShot(0, self._toggle_key_dialog.show_and_capture)
+
+    def _on_toggle_key_captured(self, key_code: int) -> None:
+        qt_key = Qt.Key(key_code)
+        if qt_key not in QT_KEY_TO_VK:
+            return
+        if self._toggle_hotkey_id is not None:
+            self._hotkey_manager.unregister(self._toggle_hotkey_id)
+        vk = QT_KEY_TO_VK[qt_key]
+        self._toggle_hotkey_id = self._hotkey_manager.register(vk, 0, self._toggle_visibility)
+        self._config.toggle_key_code = key_code
+        self._config.toggle_key_name = key_display_name(qt_key)
 
     def _open_output_dir(self) -> None:
         import subprocess
