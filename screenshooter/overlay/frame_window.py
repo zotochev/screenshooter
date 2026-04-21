@@ -84,6 +84,8 @@ class FrameWindow(QWidget):
             on_open_folder=self._open_output_dir,
             on_capture=self._capture,
             on_minimize=self.hide,
+            capture_key_label=lambda: self._config.capture_key_name,
+            minimize_key_label=lambda: self._config.toggle_key_name,
         )
         self._setup_window()
         self._setup_tray()

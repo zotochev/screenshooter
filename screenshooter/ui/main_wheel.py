@@ -15,21 +15,25 @@ class MainWheel(SteeringWheel):
         on_open_folder: Callable[[], None],
         on_capture: Callable[[], None],
         on_minimize: Callable[[], None],
+        capture_key_label: Callable[[], str] = lambda: "",
+        minimize_key_label: Callable[[], str] = lambda: "",
     ) -> None:
         self._settings_wheel = settings_wheel
         self._mode_wheel = mode_wheel
         self._on_open_folder = on_open_folder
         self._on_capture = on_capture
         self._on_minimize = on_minimize
+        self._capture_key_label = capture_key_label
+        self._minimize_key_label = minimize_key_label
         super().__init__(self._build_segments())
 
     def _build_segments(self) -> list[WheelSegment]:
         return [
             WheelSegment("Настройки", self._show_settings_wheel),
             WheelSegment("Режим", self._show_mode_wheel),
-            WheelSegment("Снимок", self._on_capture),
+            WheelSegment(lambda: f"Снимок\n{self._capture_key_label()}", self._on_capture),
             WheelSegment("Открыть", self._on_open_folder),
-            WheelSegment("Свернуть", self._on_minimize),
+            WheelSegment(lambda: f"Свернуть\n{self._minimize_key_label()}", self._on_minimize),
         ]
 
     def _show_settings_wheel(self) -> None:

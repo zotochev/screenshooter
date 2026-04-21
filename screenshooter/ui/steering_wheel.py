@@ -136,7 +136,7 @@ class SteeringWheel(QWidget):
             lp = self._point_on_circle(label_r, mid)
             painter.setPen(COLOR_TEXT)
             painter.drawText(
-                int(lp.x() - 40), int(lp.y() - 16), 80, 32,
+                int(lp.x() - 40), int(lp.y() - 20), 80, 40,
                 Qt.AlignmentFlag.AlignCenter,
                 segment.get_label(),
             )
