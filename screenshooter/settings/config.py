@@ -16,3 +16,4 @@ class Config:
     capture_key_name: str = "F9"
     toggle_key_code: int = field(default_factory=lambda: int(Qt.Key.Key_F10))
     toggle_key_name: str = "F10"
+    language: str = "ru"

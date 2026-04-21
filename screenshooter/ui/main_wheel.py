@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from PyQt6.QtGui import QCursor
 
+from screenshooter.locale import tr
 from screenshooter.ui.mode_wheel import ModeWheel
 from screenshooter.ui.settings_wheel import SettingsWheel
 from screenshooter.ui.steering_wheel import SteeringWheel, WheelSegment
@@ -29,11 +30,11 @@ class MainWheel(SteeringWheel):
 
     def _build_segments(self) -> list[WheelSegment]:
         return [
-            WheelSegment("Настройки", self._show_settings_wheel),
-            WheelSegment("Режим", self._show_mode_wheel),
-            WheelSegment(lambda: f"Снимок\n{self._capture_key_label()}", self._on_capture),
-            WheelSegment("Открыть", self._on_open_folder),
-            WheelSegment(lambda: f"Свернуть\n{self._minimize_key_label()}", self._on_minimize),
+            WheelSegment(lambda: tr("settings"), self._show_settings_wheel),
+            WheelSegment(lambda: tr("mode"), self._show_mode_wheel),
+            WheelSegment(lambda: f"{tr('capture')}\n{self._capture_key_label()}", self._on_capture),
+            WheelSegment(lambda: tr("open"), self._on_open_folder),
+            WheelSegment(lambda: f"{tr('minimize')}\n{self._minimize_key_label()}", self._on_minimize),
         ]
 
     def _show_settings_wheel(self) -> None:

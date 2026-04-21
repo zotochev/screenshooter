@@ -5,6 +5,7 @@ from PyQt6.QtGui import QColor, QCursor, QMouseEvent
 from PyQt6.QtWidgets import QApplication, QWidget
 
 from screenshooter.hotkey.hotkey_manager import HotkeyManager
+from screenshooter.locale import tr
 from screenshooter.overlay.position_strategy import PositionStrategy
 from screenshooter.overlay.resize_handle import CURSORS, Handle, apply_resize, hit_test
 
@@ -33,7 +34,7 @@ class FollowCursorStrategy(QObject, PositionStrategy):
 
     @property
     def label(self) -> str:
-        return "Курсор"
+        return tr("cursor")
 
     @property
     def border_color(self) -> QColor:

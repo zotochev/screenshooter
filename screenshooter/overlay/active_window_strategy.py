@@ -6,6 +6,7 @@ from PyQt6.QtCore import QObject, QTimer
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QWidget
 
+from screenshooter.locale import tr
 from screenshooter.overlay.position_strategy import PositionStrategy
 
 
@@ -54,7 +55,7 @@ class ActiveWindowStrategy(QObject, PositionStrategy):
 
     @property
     def label(self) -> str:
-        return "Окно"
+        return tr("window")
 
     @property
     def border_color(self) -> QColor:

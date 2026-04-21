@@ -2,6 +2,8 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QKeyEvent, QPainter
 from PyQt6.QtWidgets import QApplication, QWidget
 
+from screenshooter.locale import tr
+
 
 _MODIFIERS = {
     Qt.Key.Key_Shift, Qt.Key.Key_Control,
@@ -43,7 +45,7 @@ class KeyCaptureDialog(QWidget):
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRoundedRect(self.rect(), 8, 8)
         painter.setPen(QColor(255, 255, 255))
-        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "Нажмите клавишу…\n(Esc — отмена)")
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, tr("press_key"))
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         key = Qt.Key(event.key())

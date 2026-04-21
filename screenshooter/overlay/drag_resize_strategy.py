@@ -2,6 +2,7 @@ from PyQt6.QtCore import Qt, QPoint, QRect, QSize
 from PyQt6.QtGui import QColor, QMouseEvent
 from PyQt6.QtWidgets import QWidget
 
+from screenshooter.locale import tr
 from screenshooter.overlay.position_strategy import PositionStrategy
 from screenshooter.overlay.resize_handle import Handle, CURSORS, hit_test, apply_resize
 
@@ -17,7 +18,7 @@ class DragResizeStrategy(PositionStrategy):
 
     @property
     def label(self) -> str:
-        return "Фикс"
+        return tr("fixed")
 
     @property
     def border_color(self) -> QColor:

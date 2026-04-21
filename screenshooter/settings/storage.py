@@ -30,6 +30,7 @@ def load() -> Config:
             capture_key_name=key_display_name(Qt.Key(key_code)),
             toggle_key_code=toggle_code,
             toggle_key_name=key_display_name(Qt.Key(toggle_code)),
+            language=data.get("language", "ru"),
         )
     except (KeyError, ValueError, OSError):
         return Config()
@@ -42,5 +43,6 @@ def save(config: Config) -> None:
         "format": config.format,
         "capture_key_code": config.capture_key_code,
         "toggle_key_code": config.toggle_key_code,
+        "language": config.language,
     }
     CONFIG_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")

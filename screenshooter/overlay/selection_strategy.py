@@ -2,6 +2,7 @@ from PyQt6.QtCore import QObject, QPoint, QRect, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QColor, QCursor, QMouseEvent, QPainter, QPen
 from PyQt6.QtWidgets import QApplication, QWidget
 
+from screenshooter.locale import tr
 from screenshooter.overlay.position_strategy import PositionStrategy
 
 _MIN_SIZE = 5
@@ -26,7 +27,7 @@ class SelectionStrategy(QObject, PositionStrategy):
 
     @property
     def label(self) -> str:
-        return "Выделение"
+        return tr("selection")
 
     @property
     def border_color(self) -> QColor:

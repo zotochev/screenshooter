@@ -3,12 +3,14 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from screenshooter.hotkey.hotkey_manager import HotkeyManager
+from screenshooter.locale import set_language
 from screenshooter.overlay.frame_window import FrameWindow
 from screenshooter.settings import storage
 
 
 def main() -> None:
     config = storage.load()
+    set_language(config.language)
 
     app = QApplication(sys.argv)
     hotkey_manager = HotkeyManager()

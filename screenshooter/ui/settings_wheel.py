@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from PyQt6.QtCore import QPointF
 
+from screenshooter.locale import tr
 from screenshooter.ui.about_popup import AboutPopup
 from screenshooter.ui.format_wheel import FormatWheel
 from screenshooter.ui.steering_wheel import SubWheel, WheelSegment
@@ -36,10 +37,10 @@ class SettingsWheel(SubWheel):
     def _build_segments(self) -> list[WheelSegment]:
         return [
             WheelSegment(self._current_format_label, self._show_format_wheel),
-            WheelSegment("Папка", self._on_pick_folder),
+            WheelSegment(lambda: tr("folder"), self._on_pick_folder),
             WheelSegment(self._current_key_label, self._on_capture_key),
             WheelSegment(self._current_toggle_key_label, self._on_toggle_key),
-            WheelSegment("О программе", self._show_about),
+            WheelSegment(lambda: tr("about"), self._show_about),
         ]
 
     def _show_format_wheel(self) -> None:

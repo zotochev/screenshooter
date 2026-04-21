@@ -2,6 +2,7 @@ from PyQt6.QtCore import QObject, QTimer
 from PyQt6.QtGui import QColor, QCursor, QMouseEvent
 from PyQt6.QtWidgets import QApplication, QWidget
 
+from screenshooter.locale import tr
 from screenshooter.overlay.position_strategy import PositionStrategy
 
 
@@ -18,7 +19,7 @@ class FullscreenStrategy(QObject, PositionStrategy):
 
     @property
     def label(self) -> str:
-        return "Экран"
+        return tr("screen")
 
     @property
     def border_color(self) -> QColor:

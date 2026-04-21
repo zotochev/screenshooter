@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon, QWidget
 
 from screenshooter.capture.capturer import capture
 from screenshooter.hotkey.hotkey_manager import HotkeyManager
+from screenshooter.locale import LANG_NAMES, current_language, set_language, tr
 from screenshooter.overlay.border_flash import BorderFlash
 from screenshooter.hotkey.vk_codes import QT_KEY_TO_VK, key_display_name
 from screenshooter.overlay.active_window_strategy import ActiveWindowStrategy
@@ -69,12 +70,12 @@ class FrameWindow(QWidget):
             on_pick_folder=self._pick_output_dir,
             on_capture_key=self._show_key_capture,
             on_toggle_key=self._show_toggle_key_capture,
-            current_key_label=lambda: f"Снять: {self._config.capture_key_name}",
-            current_toggle_key_label=lambda: f"Скрыть: {self._config.toggle_key_name}",
+            current_key_label=lambda: tr("capture_key_label").format(key=self._config.capture_key_name),
+            current_toggle_key_label=lambda: tr("toggle_key_label").format(key=self._config.toggle_key_name),
             current_format_label=lambda: self._config.format.upper(),
         )
         mode_wheel = ModeWheel(
-            labels=[s.label for s in self._strategies],
+            labels=[lambda s=s: s.label for s in self._strategies],
             get_current_index=lambda: self._strategy_index,
             on_select=self._select_strategy,
         )
@@ -97,15 +98,30 @@ class FrameWindow(QWidget):
     def _setup_tray(self) -> None:
         self._tray = QSystemTrayIcon(self._make_tray_icon(), self)
         self._tray.setToolTip("Screenshooter")
-
-        menu = QMenu()
-        menu.addAction("Показать / Скрыть", self._toggle_visibility)
-        menu.addSeparator()
-        menu.addAction("Выход", self._quit)
-
-        self._tray.setContextMenu(menu)
         self._tray.activated.connect(self._on_tray_activated)
+        self._rebuild_tray_menu()
         self._tray.show()
+
+    def _rebuild_tray_menu(self) -> None:
+        menu = QMenu()
+        menu.addAction(tr("show_hide"), self._toggle_visibility)
+        menu.addSeparator()
+
+        lang_menu = menu.addMenu(tr("language"))
+        for code, name in LANG_NAMES.items():
+            action = lang_menu.addAction(name)
+            action.setCheckable(True)
+            action.setChecked(code == current_language())
+            action.triggered.connect(lambda checked, c=code: self._set_language(c))
+
+        menu.addSeparator()
+        menu.addAction(tr("quit"), self._quit)
+        self._tray.setContextMenu(menu)
+
+    def _set_language(self, lang: str) -> None:
+        set_language(lang)
+        self._config.language = lang
+        self._rebuild_tray_menu()
 
     @staticmethod
     def _make_tray_icon() -> QIcon:
@@ -268,7 +284,7 @@ class FrameWindow(QWidget):
         from PyQt6.QtWidgets import QFileDialog
         chosen = QFileDialog.getExistingDirectory(
             self,
-            "Папка для скриншотов",
+            tr("screenshots_folder"),
             str(self._config.output_dir),
         )
         if chosen:
