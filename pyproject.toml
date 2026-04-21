@@ -2,6 +2,7 @@
 name = "screenshooter"
 version = "0.1.0"
 description = "Fixed-size overlay window for taking screenshots"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
     "PyQt6",
