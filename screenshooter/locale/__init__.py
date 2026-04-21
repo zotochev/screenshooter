@@ -19,6 +19,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "press_key": "Нажмите клавишу…\n(Esc — отмена)",
         "capture_key_label": "Снять: {key}",
         "toggle_key_label": "Скрыть: {key}",
+        "app_description": "оверлей для скриншотов",
+        "repo": "↓ Репозиторий",
     },
     "en": {
         "show_hide": "Show / Hide",
@@ -40,6 +42,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "press_key": "Press a key…\n(Esc — cancel)",
         "capture_key_label": "Capture: {key}",
         "toggle_key_label": "Hide: {key}",
+        "app_description": "screenshot overlay",
+        "repo": "↓ Repository",
     },
 }
 

@@ -167,9 +167,6 @@ class FrameWindow(QWidget):
         capture_key = Qt.Key(self._config.capture_key_code)
         vk = QT_KEY_TO_VK.get(capture_key, QT_KEY_TO_VK[DEFAULT_CAPTURE_KEY])
         self._capture_hotkey_id = self._hotkey_manager.register(vk, 0, self._capture)
-        self._exit_hotkey_id = self._hotkey_manager.register(
-            QT_KEY_TO_VK[Qt.Key.Key_Escape], 0, self.close
-        )
         toggle_key = Qt.Key(self._config.toggle_key_code)
         if toggle_key in QT_KEY_TO_VK:
             self._toggle_hotkey_id = self._hotkey_manager.register(
@@ -204,6 +201,16 @@ class FrameWindow(QWidget):
         self._active_window_strategy.register_hwnd(int(self.winId()))
         if handle := self.windowHandle():
             handle.screenChanged.connect(self._on_screen_changed)
+        if self._exit_hotkey_id is None:
+            self._exit_hotkey_id = self._hotkey_manager.register(
+                QT_KEY_TO_VK[Qt.Key.Key_Escape], 0, self.hide
+            )
+
+    def hideEvent(self, event) -> None:
+        super().hideEvent(event)
+        if self._exit_hotkey_id is not None:
+            self._hotkey_manager.unregister(self._exit_hotkey_id)
+            self._exit_hotkey_id = None
 
     def mousePressEvent(self, event) -> None:
         if event.button() == Qt.MouseButton.RightButton:
