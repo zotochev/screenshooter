@@ -55,8 +55,11 @@ class SteeringWheel(QWidget):
         )
         self._hovered = None
         self.show()
-        remove_dwm_border(int(self.winId()))
         self.grabMouse()
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        remove_dwm_border(int(self.winId()))
 
     # ------------------------------------------------------------------
     # Geometry helpers
